@@ -1,0 +1,1 @@
+# Aqui va los archivos que tienen funciones que llaman a los endpoints para poder usar esas funciones solo importandolas y llamandolas desde el frontend y solo usar parametros.
