@@ -8,6 +8,7 @@ import {
   EmptyState,
   ThemeToggle
 } from "@/components/dashboard";
+import { GeneralStatistics } from "@/components/estadisticas";
 
 export default function Dashboard() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -82,6 +83,8 @@ export default function Dashboard() {
         <ResultsCarousel searchResults={searchResults} />
 
         <EmptyState isVisible={searchResults.length === 0 && !isLoading} />
+
+        <GeneralStatistics />
         </div>
     );
 }
