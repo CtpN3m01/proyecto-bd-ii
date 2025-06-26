@@ -4,27 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-interface PageData {
+interface PageResult {
   id: string;
+  titulo: string;
   url: string;
-  title: string;
-  copies: number;
-  domain: string;
-}
-
-interface NGramData {
-  id: string;
-  ngram: string;
-  frequency: number;
-  pages: number;
+  frecuencia: number;
 }
 
 interface StatisticsChartProps {
-  selectedNgram?: NGramData;
-  selectedPage?: PageData;
+  selectedPage?: PageResult;
 }
 
-export default function StatisticsChart({ selectedNgram, selectedPage }: StatisticsChartProps) {
+export default function StatisticsChart({ selectedPage }: StatisticsChartProps) {
   // Datos de ejemplo para los gráficos
   const barChartData = [
     { name: "Lun", value: 120 },
@@ -43,7 +34,7 @@ export default function StatisticsChart({ selectedNgram, selectedPage }: Statist
     { name: "Foros", value: 17, color: "#FF8042" }
   ];
 
-  if (!selectedNgram && !selectedPage) {
+  if (!selectedPage) {
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-full">
@@ -52,7 +43,7 @@ export default function StatisticsChart({ selectedNgram, selectedPage }: Statist
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Estadísticas</h3>
               <p className="text-muted-foreground">
-                Selecciona un N-Gram y una página para ver las estadísticas detalladas
+                Selecciona una página de los resultados para ver las estadísticas detalladas
               </p>
             </div>
           </div>
@@ -61,13 +52,21 @@ export default function StatisticsChart({ selectedNgram, selectedPage }: Statist
     );
   }
 
+  // Extraer dominio de la URL
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  };
+
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle>Estadísticas</CardTitle>
         <CardDescription>
-          {selectedNgram && `Datos para "${selectedNgram.ngram}"`}
-          {selectedPage && ` en ${selectedPage.domain}`}
+          Datos para "{selectedPage.titulo}" en {getDomain(selectedPage.url)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -137,18 +136,16 @@ export default function StatisticsChart({ selectedNgram, selectedPage }: Statist
           </div>
 
           {/* Métricas adicionales */}
-          {selectedNgram && (
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{selectedNgram.frequency.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">Frecuencia total</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{selectedNgram.pages}</div>
-                <div className="text-xs text-muted-foreground">Páginas únicas</div>
-              </div>
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{selectedPage.frecuencia.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Frecuencia total</div>
             </div>
-          )}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{getDomain(selectedPage.url).split('.').length}</div>
+              <div className="text-xs text-muted-foreground">Subdominios</div>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

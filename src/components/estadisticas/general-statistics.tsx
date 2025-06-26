@@ -1,35 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import NgramsTable from "./ngrams-table";
-import Top10Pages from "./top10-pages";
+import NgramSearch from "./ngram-search";
 import StatisticsChart from "./statistics-chart";
 
-interface NGramData {
+interface PageResult {
   id: string;
-  ngram: string;
-  frequency: number;
-  pages: number;
-}
-
-interface PageData {
-  id: string;
+  titulo: string;
   url: string;
-  title: string;
-  copies: number;
-  domain: string;
+  frecuencia: number;
 }
 
 export default function GeneralStatistics() {
-  const [selectedNgram, setSelectedNgram] = useState<NGramData>();
-  const [selectedPage, setSelectedPage] = useState<PageData>();
+  const [selectedPage, setSelectedPage] = useState<PageResult>();
 
-  const handleNgramSelect = (ngram: NGramData) => {
-    setSelectedNgram(ngram);
-    setSelectedPage(undefined); // Reset page selection when ngram changes
-  };
-
-  const handlePageSelect = (page: PageData) => {
+  const handlePageSelect = (page: PageResult) => {
     setSelectedPage(page);
   };
 
@@ -39,24 +24,15 @@ export default function GeneralStatistics() {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Estadísticas Generales</h2>
         <p className="text-muted-foreground">
-          Análisis detallado de N-Grams y distribución de contenido
+          Búsqueda inteligente de N-Grams con análisis automático
         </p>
       </div>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-        {/* Left Column - N-Grams Table */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+        {/* Left Column - N-Gram Search */}
         <div className="lg:col-span-1">
-          <NgramsTable 
-            onNgramSelect={handleNgramSelect}
-            selectedNgram={selectedNgram}
-          />
-        </div>
-
-        {/* Middle Column - Top 10 Pages */}
-        <div className="lg:col-span-1">
-          <Top10Pages 
-            selectedNgram={selectedNgram}
+          <NgramSearch 
             onPageSelect={handlePageSelect}
             selectedPage={selectedPage}
           />
@@ -65,7 +41,6 @@ export default function GeneralStatistics() {
         {/* Right Column - Statistics Chart */}
         <div className="lg:col-span-1">
           <StatisticsChart 
-            selectedNgram={selectedNgram}
             selectedPage={selectedPage}
           />
         </div>
