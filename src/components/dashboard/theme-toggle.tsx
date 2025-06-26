@@ -24,7 +24,7 @@ export default function ThemeToggle() {
   };
 
   return (
-    <div className="fixed right-4 flex items-center gap-2 w-[40px] p-5 bg-background border rounded-lg shadow-sm">
+    <div className="fixed right-70 flex items-center gap-2 w-[120px] p-5 bg-background border rounded-lg shadow-sm">
         <span className="text-sm">
             <Sun className="h-4 w-4" />
         </span>
