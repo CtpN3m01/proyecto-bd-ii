@@ -24,8 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    console.log('🔍 Buscando trigramas para:', trigrama);
-
     const results = await query<TopTrigrama>(
       `SELECT tt.*, p.titulo, p.url 
        FROM top_trigramas tt 
@@ -35,13 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        LIMIT 15`,
       [`${trigrama}%`]
     );
-
-    console.log(`✅ Encontrados ${results.length} resultados para trigrama "${trigrama}"`);
-
-    // Log de los primeros resultados para debug
-    if (results.length > 0) {
-      console.log('📊 Primer resultado:', results[0]);
-    }
 
     // Transformar los datos al formato esperado por el frontend
     const formattedResults = results

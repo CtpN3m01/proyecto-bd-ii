@@ -23,8 +23,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const paginaIdNum = parseInt(pagina_id);
     
-    console.log('🔍 Obteniendo palabras y porcentajes para página ID:', paginaIdNum);
-
     const results = await query<PalabraPorcentaje>(
       `SELECT DISTINCT pp.palabra, pp.frecuencia, prpp.porcentaje
        FROM palabra_pagina AS pp 
@@ -33,8 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        ORDER BY pp.frecuencia DESC, pp.palabra ASC`,
       [paginaIdNum]
     );
-
-    console.log(`✅ Encontradas ${results.length} palabras con porcentajes`);
 
     return res.status(200).json({
       success: true,

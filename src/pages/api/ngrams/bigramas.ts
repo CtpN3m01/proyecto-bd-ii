@@ -24,8 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    console.log('🔍 Buscando bigramas para:', bigrama);
-
     const results = await query<TopBigrama>(
       `SELECT tb.*, p.titulo, p.url 
        FROM top_bigramas tb 
@@ -35,13 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        LIMIT 15`,
       [`${bigrama}%`]
     );
-
-    console.log(`✅ Encontrados ${results.length} resultados para bigrama "${bigrama}"`);
-
-    // Log de los primeros resultados para debug
-    if (results.length > 0) {
-      console.log('📊 Primer resultado:', results[0]);
-    }
 
     // Transformar los datos al formato esperado por el frontend
     const formattedResults = results

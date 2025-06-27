@@ -12,17 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('🔍 Obteniendo distribución de longitud de palabras...');
-
     const results = await query<DistribucionLongitud>(
       'SELECT * FROM distribucion_longitud_palabra ORDER BY longitud ASC'
     );
-
-    console.log(`✅ Encontrados ${results.length} registros de distribución`);
-
-    if (results.length > 0) {
-      console.log('📊 Datos de distribución:', results);
-    }
 
     return res.status(200).json({
       success: true,

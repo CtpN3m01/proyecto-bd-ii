@@ -27,23 +27,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    console.log('🔍 Buscando páginas con título:', titulo);
-
     const results = await query<PaginaResult>(
       `SELECT id, titulo, url, num_palabras, num_palabras_unicas, 
               enlaces_salientes, enlaces_entrantes, pagerank, longitud_promedio 
        FROM pagina 
        WHERE titulo LIKE ? 
        ORDER BY titulo ASC
-       LIMIT 10`,
+       LIMIT 5`,
       [`%${titulo}%`]
     );
-
-    console.log(`✅ Encontradas ${results.length} páginas para "${titulo}"`);
-
-    if (results.length > 0) {
-      console.log('📊 Primera página:', results[0]);
-    }
 
     return res.status(200).json({
       success: true,

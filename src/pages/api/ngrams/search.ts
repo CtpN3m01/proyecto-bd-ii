@@ -24,45 +24,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
+  let sqlQuery = '';
+
   try {
     const { q } = req.query;
 
     if (!q || typeof q !== 'string') {
       return res.status(400).json({ 
-        error: 'El parámetro "q" (query) es requerido' 
+        error: 'El parámetro "q" es requerido' 
       });
     }
 
     const searchQuery = q.trim();
     const words = searchQuery.split(/\s+/);
     
-    let ngramType: 'unigrama' | 'bigrama' | 'trigrama' | null = null;
-    let sqlQuery = '';
     let tableName = '';
     let columnName = '';
+    let ngramType = '';
 
-    // Detectar tipo y construir query correspondiente
+    // Determinar qué tipo de n-grama buscar
     if (words.length === 1) {
-      ngramType = 'unigrama';
-      tableName = 'top_unigramas';
+      tableName = 'unigrama';
       columnName = 'palabra';
+      ngramType = 'unigrama';
     } else if (words.length === 2) {
-      ngramType = 'bigrama';
-      tableName = 'top_bigramas';
+      tableName = 'bigrama';
       columnName = 'bigrama';
+      ngramType = 'bigrama';
     } else if (words.length === 3) {
-      ngramType = 'trigrama';
-      tableName = 'top_trigramas';
+      tableName = 'trigrama';
       columnName = 'trigrama';
+      ngramType = 'trigrama';
     } else {
       return res.status(400).json({
-        success: false,
         error: 'Solo se admiten búsquedas de 1, 2 o 3 palabras',
         type: null
       });
     }
-
-    console.log(`🔍 Buscando ${ngramType} para:`, searchQuery);
 
     // Construir la query SQL
     sqlQuery = `
@@ -75,8 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `;
 
     const results = await query<NgramResult>(sqlQuery, [`${searchQuery}%`]);
-
-    console.log(`✅ Encontrados ${results.length} resultados para ${ngramType} "${searchQuery}"`);
 
     // Transformar los datos al formato esperado por el frontend
     const formattedResults: PageResult[] = results.map(result => ({
@@ -95,7 +91,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('❌ Error en API de búsqueda de n-gramas:', error);
     res.status(500).json({ 
       success: false,
       error: 'Error interno del servidor',

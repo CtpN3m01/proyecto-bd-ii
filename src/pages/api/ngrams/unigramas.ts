@@ -24,8 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    console.log('🔍 Buscando unigramas para:', palabra);
-
     const results = await query<TopUnigrama>(
       `SELECT tu.*, p.titulo, p.url 
        FROM top_unigramas tu 
@@ -35,13 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        LIMIT 15`,
       [`${palabra}%`]
     );
-
-    console.log(`✅ Encontrados ${results.length} resultados para unigrama "${palabra}"`);
-
-    // Log de los primeros resultados para debug
-    if (results.length > 0) {
-      console.log('📊 Primer resultado:', results[0]);
-    }
 
     // Transformar los datos al formato esperado por el frontend
     const formattedResults = results

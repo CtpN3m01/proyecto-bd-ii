@@ -24,8 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const paginaIdNum = parseInt(pagina_id);
     
-    console.log('🔍 Obteniendo coincidencias de bigramas para página ID:', paginaIdNum);
-
     const results = await query<CoincidenciaBigrama>(
       `SELECT
         t.otro_id        AS pagina_id,
@@ -52,8 +50,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       LIMIT 5`,
       [paginaIdNum, paginaIdNum]
     );
-
-    console.log(`✅ Encontradas ${results.length} coincidencias de bigramas`);
 
     return res.status(200).json({
       success: true,
