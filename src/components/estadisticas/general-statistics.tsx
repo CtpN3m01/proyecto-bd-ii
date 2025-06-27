@@ -24,25 +24,23 @@ export default function GeneralStatistics() {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Estadísticas Generales</h2>
         <p className="text-muted-foreground">
-          Búsqueda inteligente de N-Grams con análisis automático
+          Búsqueda inteligente de N-Grams y análisis de distribución de palabras
         </p>
       </div>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
-        {/* Left Column - N-Gram Search */}
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+        {/* Left Column - N-Gram Search (2/3 of space) */}
+        <div className="lg:col-span-2">
           <NgramSearch 
             onPageSelect={handlePageSelect}
             selectedPage={selectedPage}
           />
         </div>
 
-        {/* Right Column - Statistics Chart */}
+        {/* Right Column - Statistics Chart (1/3 of space) */}
         <div className="lg:col-span-1">
-          <StatisticsChart 
-            selectedPage={selectedPage}
-          />
+          <StatisticsChart />
         </div>
       </div>
     </div>

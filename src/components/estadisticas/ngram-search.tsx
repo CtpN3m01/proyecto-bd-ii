@@ -5,15 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Search, ExternalLink } from "lucide-react";
-
-interface PageResult {
-  id: string;
-  titulo: string;
-  url: string;
-  frecuencia: number;
-}
+import { Search, AlertCircle } from "lucide-react";
+import { useNgramSearch, PageResult, NgramType } from "@/hooks/useNgramSearch";
 
 interface NgramSearchProps {
   onPageSelect?: (page: PageResult) => void;
@@ -22,82 +17,22 @@ interface NgramSearchProps {
 
 export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<PageResult[]>([]);
-  const [ngramType, setNgramType] = useState<"unigrama" | "bigrama" | "trigrama" | null>(null);
-
-  // Función para detectar el tipo de n-grama
-  const detectNgramType = (query: string): "unigrama" | "bigrama" | "trigrama" | null => {
-    if (!query.trim()) return null;
-    
-    const words = query.trim().split(/\s+/);
-    
-    if (words.length === 1) return "unigrama";
-    if (words.length === 2) return "bigrama";
-    if (words.length === 3) return "trigrama";
-    
-    return null; // Más de 3 palabras no se procesa
-  };
-
-  // Datos de ejemplo - aquí conectarás con tu API
-  const getMockResults = (query: string, type: "unigrama" | "bigrama" | "trigrama"): PageResult[] => {
-    const mockData = {
-      unigrama: [
-        { id: "1", titulo: "Desarrollo Web Moderno con React", url: "https://example.com/react-dev", frecuencia: 45 },
-        { id: "2", titulo: "Guía Completa de JavaScript", url: "https://example.com/js-guide", frecuencia: 38 },
-        { id: "3", titulo: "Tutorial de Node.js", url: "https://example.com/nodejs", frecuencia: 32 },
-        { id: "4", titulo: "Programación Frontend", url: "https://example.com/frontend", frecuencia: 28 },
-        { id: "5", titulo: "Desarrollo Backend", url: "https://example.com/backend", frecuencia: 25 },
-      ],
-      bigrama: [
-        { id: "1", titulo: "Desarrollo Web: Guía Completa", url: "https://example.com/web-dev-guide", frecuencia: 67 },
-        { id: "2", titulo: "Curso de Desarrollo Web", url: "https://example.com/web-course", frecuencia: 54 },
-        { id: "3", titulo: "Desarrollo Web con JavaScript", url: "https://example.com/js-web", frecuencia: 41 },
-        { id: "4", titulo: "Desarrollo Web Frontend", url: "https://example.com/frontend-web", frecuencia: 35 },
-        { id: "5", titulo: "Desarrollo Web Responsive", url: "https://example.com/responsive", frecuencia: 29 },
-      ],
-      trigrama: [
-        { id: "1", titulo: "Full Stack Developer: Carrera Completa", url: "https://example.com/fullstack-career", frecuencia: 89 },
-        { id: "2", titulo: "Cómo ser Full Stack Developer", url: "https://example.com/become-fullstack", frecuencia: 76 },
-        { id: "3", titulo: "Full Stack Developer Roadmap", url: "https://example.com/fullstack-roadmap", frecuencia: 65 },
-        { id: "4", titulo: "Full Stack Developer Skills", url: "https://example.com/fullstack-skills", frecuencia: 52 },
-        { id: "5", titulo: "Full Stack Developer Jobs", url: "https://example.com/fullstack-jobs", frecuencia: 43 },
-      ]
-    };
-
-    return mockData[type] || [];
-  };
+  const { 
+    results, 
+    isLoading, 
+    error, 
+    ngramType, 
+    searchNgrams, 
+    clearResults 
+  } = useNgramSearch();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      setResults([]);
-      setNgramType(null);
+      clearResults();
       return;
     }
 
-    setIsLoading(true);
-    
-    try {
-      const detectedType = detectNgramType(searchQuery);
-      setNgramType(detectedType);
-      
-      if (detectedType) {
-        // Aquí harías la llamada a tu API real
-        // const response = await fetch(`/api/ngrams/${detectedType}?query=${encodeURIComponent(searchQuery)}`);
-        // const data = await response.json();
-        
-        // Por ahora usamos datos mock
-        const mockResults = getMockResults(searchQuery, detectedType);
-        setResults(mockResults);
-      } else {
-        setResults([]);
-      }
-    } catch (error) {
-      console.error("Error en la búsqueda:", error);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
+    await searchNgrams(searchQuery);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -112,11 +47,7 @@ export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchP
     }
   };
 
-  const openUrl = (url: string) => {
-    window.open(url, '_blank');
-  };
-
-  const getNgramTypeLabel = (type: "unigrama" | "bigrama" | "trigrama" | null) => {
+  const getNgramTypeLabel = (type: NgramType | null) => {
     switch (type) {
       case "unigrama": return "Unigrama";
       case "bigrama": return "Bigrama";
@@ -125,13 +56,8 @@ export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchP
     }
   };
 
-  useEffect(() => {
-    const type = detectNgramType(searchQuery);
-    setNgramType(type);
-  }, [searchQuery]);
-
   return (
-    <Card className="h-full">
+    <Card className="h-full ">
       <CardHeader>
         <CardTitle>Búsqueda de N-Grams</CardTitle>
         <CardDescription>
@@ -171,65 +97,68 @@ export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchP
           </div>
         )}
 
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
+
         {/* Tabla de resultados */}
         {results.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3">
               Top {getNgramTypeLabel(ngramType)} - "{searchQuery}"
             </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título de la Página</TableHead>
-                  <TableHead>URL</TableHead>
-                  <TableHead className="text-center">Frecuencia</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.map((page) => (
-                  <TableRow 
-                    key={page.id}
-                    className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                      selectedPage?.id === page.id ? 'bg-accent' : ''
-                    }`}
-                    onClick={() => handlePageClick(page)}
-                  >
-                    <TableCell className="font-medium max-w-xs">
-                      <div className="truncate" title={page.titulo}>
-                        {page.titulo}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <div className="truncate text-muted-foreground" title={page.url}>
-                        {page.url}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary">{page.frecuencia}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openUrl(page.url);
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </TableCell>
+            <ScrollArea className="h-[400px] border rounded-md">
+              <Table className="table-fixed w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[45%]">Título de la Página</TableHead>
+                    <TableHead className="w-[40%]">URL</TableHead>
+                    <TableHead className="w-[15%] text-center">Frecuencia</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {results.map((page) => (
+                    <TableRow 
+                      key={page.id}
+                      className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                        selectedPage?.id === page.id ? 'bg-accent' : ''
+                      }`}
+                      onClick={() => handlePageClick(page)}
+                    >
+                      <TableCell className="font-medium w-[45%] max-w-0">
+                        <div className="truncate pr-2" title={page.titulo}>
+                          {page.titulo}
+                        </div>
+                      </TableCell>
+                      <TableCell className="w-[40%] max-w-0">
+                        <a
+                          href={page.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 underline truncate block pr-2 max-w-full"
+                          title={page.url}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {page.url}
+                        </a>
+                      </TableCell>
+                      <TableCell className="w-[15%] text-center min-w-0">
+                        <Badge variant="secondary">{page.frecuencia}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </div>
         )}
 
         {/* Estado vacío */}
-        {!searchQuery.trim() && (
+        {!searchQuery.trim() && results.length === 0 && (
           <div className="text-center py-12">
             <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Busca un N-Gram</h3>
@@ -240,7 +169,7 @@ export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchP
         )}
 
         {/* Sin resultados */}
-        {searchQuery.trim() && results.length === 0 && !isLoading && ngramType && (
+        {searchQuery.trim() && results.length === 0 && !isLoading && !error && ngramType && (
           <div className="text-center py-12">
             <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No se encontraron resultados</h3>
@@ -251,7 +180,7 @@ export default function NgramSearch({ onPageSelect, selectedPage }: NgramSearchP
         )}
 
         {/* Tipo no soportado */}
-        {searchQuery.trim() && !ngramType && (
+        {searchQuery.trim() && !ngramType && !isLoading && !error && (
           <div className="text-center py-12">
             <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Tipo no soportado</h3>
